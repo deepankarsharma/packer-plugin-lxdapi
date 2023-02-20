@@ -10,7 +10,7 @@ import (
 
 func main() {
 	pps := plugin.NewSet()
-	pps.RegisterBuilder("my-builder", new(lxdapi.Builder))
+	pps.RegisterBuilder("builder", new(lxdapi.Builder))
 	pps.SetVersion(lxdapiVersion.PluginVersion)
 	err := pps.Run()
 	if err != nil {
