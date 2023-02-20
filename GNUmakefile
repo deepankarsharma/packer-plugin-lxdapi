@@ -1,4 +1,4 @@
-NAME=scaffolding
+NAME=lxdapi
 BINARY=packer-plugin-${NAME}
 
 COUNT?=1

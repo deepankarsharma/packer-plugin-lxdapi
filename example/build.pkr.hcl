@@ -1,40 +1,28 @@
 packer {
   required_plugins {
-    scaffolding = {
-      version = ">=v0.1.0"
-      source  = "github.com/hashicorp/scaffolding"
+    lxdapi = {
+      source  = "github.com/deepankarsharma/lxdapi"
+      version = ">= 0.0.1"
     }
   }
 }
 
-source "scaffolding-my-builder" "foo-example" {
+source "lxdapi" "vm" {
   mock = local.foo
-}
-
-source "scaffolding-my-builder" "bar-example" {
-  mock = local.bar
+  virtual_machine = true
+  image        = "images:rockylinux/8/cloud/amd64"
+  output_image = "rocky8-lxdapi-phase0"
+  publish_properties = {
+    description = "Rocky Linux 8 LXD API Phase 0"
+  }
 }
 
 build {
   sources = [
-    "source.scaffolding-my-builder.foo-example",
+    "source.lxdapi.vm",
   ]
 
   source "source.scaffolding-my-builder.bar-example" {
     name = "bar"
-  }
-
-  provisioner "scaffolding-my-provisioner" {
-    only = ["scaffolding-my-builder.foo-example"]
-    mock = "foo: ${local.foo}"
-  }
-
-  provisioner "scaffolding-my-provisioner" {
-    only = ["scaffolding-my-builder.bar"]
-    mock = "bar: ${local.bar}"
-  }
-
-  post-processor "scaffolding-my-post-processor" {
-    mock = "post-processor mock-config"
   }
 }
