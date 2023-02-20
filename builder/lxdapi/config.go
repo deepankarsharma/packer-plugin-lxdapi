@@ -1,5 +1,4 @@
 //go:generate packer-sdc mapstructure-to-hcl2 -type Config
-//go:generate packer-sdc struct-markdown
 package lxdapi
 import (
 	"fmt"
