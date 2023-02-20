@@ -1,24 +1,20 @@
 //go:generate packer-sdc mapstructure-to-hcl2 -type Config
 
-package scaffolding
+package lxdapi
 
 import (
 	"context"
 
 	"github.com/hashicorp/hcl/v2/hcldec"
-	"github.com/hashicorp/packer-plugin-sdk/common"
 	"github.com/hashicorp/packer-plugin-sdk/multistep"
 	"github.com/hashicorp/packer-plugin-sdk/multistep/commonsteps"
 	"github.com/hashicorp/packer-plugin-sdk/packer"
 	"github.com/hashicorp/packer-plugin-sdk/template/config"
 )
 
-const BuilderId = "scaffolding.builder"
+const BuilderId = "lxdapi.builder"
 
-type Config struct {
-	common.PackerConfig `mapstructure:",squash"`
-	MockOption          string `mapstructure:"mock"`
-}
+
 
 type Builder struct {
 	config Config
@@ -29,7 +25,7 @@ func (b *Builder) ConfigSpec() hcldec.ObjectSpec { return b.config.FlatMapstruct
 
 func (b *Builder) Prepare(raws ...interface{}) (generatedVars []string, warnings []string, err error) {
 	err = config.Decode(&b.config, &config.DecodeOpts{
-		PluginType:  "packer.builder.scaffolding",
+		PluginType:  "packer.builder.lxdapi",
 		Interpolate: true,
 	}, raws...)
 	if err != nil {
@@ -46,7 +42,7 @@ func (b *Builder) Run(ctx context.Context, ui packer.Ui, hook packer.Hook) (pack
 
 	steps = append(steps,
 		&StepSayConfig{
-			MockConfig: b.config.MockOption,
+			MockConfig: b.config.SourceImage,
 		},
 		new(commonsteps.StepProvision),
 	)
