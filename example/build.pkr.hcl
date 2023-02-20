@@ -1,14 +1,13 @@
-packer {
-  required_plugins {
-    lxdapi = {
-      source  = "github.com/deepankarsharma/lxdapi"
-      version = ">= 0.0.2"
-    }
-  }
-}
+// packer {
+//   required_plugins {
+//     lxdapi = {
+//       source  = "github.com/deepankarsharma/lxdapi"
+//       version = "0.0.4"
+//     }
+//   }
+// }
 
-source "lxdapi" "vm" {
-  mock = local.foo
+source "lxdapi-builder" "vm" {
   virtual_machine = true
   image        = "images:rockylinux/8/cloud/amd64"
   output_image = "rocky8-lxdapi-phase0"
@@ -19,6 +18,6 @@ source "lxdapi" "vm" {
 
 build {
   sources = [
-    "source.lxdapi.vm",
+    "source.lxdapi-builder.vm",
   ]
 }

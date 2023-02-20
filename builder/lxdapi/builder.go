@@ -6,7 +6,6 @@ import (
 	"context"
 
 	"github.com/hashicorp/hcl/v2/hcldec"
-	"github.com/hashicorp/packer-plugin-sdk/common"
 	"github.com/hashicorp/packer-plugin-sdk/multistep"
 	"github.com/hashicorp/packer-plugin-sdk/multistep/commonsteps"
 	"github.com/hashicorp/packer-plugin-sdk/packer"
@@ -15,10 +14,7 @@ import (
 
 const BuilderId = "lxdapi.builder"
 
-type Config struct {
-	common.PackerConfig `mapstructure:",squash"`
-	MockOption          string `mapstructure:"mock"`
-}
+
 
 type Builder struct {
 	config Config
@@ -46,7 +42,7 @@ func (b *Builder) Run(ctx context.Context, ui packer.Ui, hook packer.Hook) (pack
 
 	steps = append(steps,
 		&StepSayConfig{
-			MockConfig: b.config.MockOption,
+			MockConfig: b.config.SourceImage,
 		},
 		new(commonsteps.StepProvision),
 	)
