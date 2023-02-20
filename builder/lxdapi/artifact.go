@@ -1,4 +1,4 @@
-package scaffolding
+package lxdapi
 
 // packersdk.Artifact implementation
 type Artifact struct {
