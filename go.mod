@@ -3,8 +3,10 @@ module packer-plugin-lxdapi
 go 1.18
 
 require (
+	github.com/google/uuid v1.3.0
 	github.com/hashicorp/hcl/v2 v2.14.1
 	github.com/hashicorp/packer-plugin-sdk v0.3.4
+	github.com/lxc/lxd v0.0.0-20230224133553-7bb22ef1cc03
 	github.com/mitchellh/mapstructure v1.5.0
 	github.com/zclconf/go-cty v1.10.0
 )
@@ -34,7 +36,6 @@ require (
 	github.com/golang/protobuf v1.5.2 // indirect
 	github.com/golang/snappy v0.0.4 // indirect
 	github.com/google/go-cmp v0.5.9 // indirect
-	github.com/google/uuid v1.3.0 // indirect
 	github.com/googleapis/enterprise-certificate-proxy v0.2.0 // indirect
 	github.com/googleapis/gax-go/v2 v2.7.0 // indirect
 	github.com/gorilla/websocket v1.5.0 // indirect
@@ -43,7 +44,7 @@ require (
 	github.com/hashicorp/go-cleanhttp v0.5.2 // indirect
 	github.com/hashicorp/go-getter/gcs/v2 v2.1.0 // indirect
 	github.com/hashicorp/go-getter/s3/v2 v2.1.0 // indirect
-	github.com/hashicorp/go-getter/v2 v2.2.0 // indirect
+	github.com/hashicorp/go-getter/v2 v2.1.0 // indirect
 	github.com/hashicorp/go-hclog v0.16.2 // indirect
 	github.com/hashicorp/go-immutable-radix v1.3.1 // indirect
 	github.com/hashicorp/go-multierror v1.1.1 // indirect
@@ -63,8 +64,8 @@ require (
 	github.com/juju/webbrowser v1.0.0 // indirect
 	github.com/julienschmidt/httprouter v1.3.0 // indirect
 	github.com/kballard/go-shellquote v0.0.0-20180428030007-95032a82bc51 // indirect
+	github.com/klauspost/compress v1.15.15 // indirect
 	github.com/kr/fs v0.1.0 // indirect
-	github.com/lxc/lxd v0.0.0-20230222034031-ed5c8fd56289 // indirect
 	github.com/masterzen/simplexml v0.0.0-20190410153822-31eea3082786 // indirect
 	github.com/masterzen/winrm v0.0.0-20210623064412-3b76017826b0 // indirect
 	github.com/mattn/go-colorable v0.1.13 // indirect

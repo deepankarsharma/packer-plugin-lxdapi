@@ -1,8 +1,3 @@
-<<<<<<< HEAD
-//go:generate packer-sdc mapstructure-to-hcl2 -type Config
-
-=======
->>>>>>> b9603e165e30640cff31d115002a1b60793e13e1
 package lxdapi
 
 import (

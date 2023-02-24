@@ -111,19 +111,6 @@ func (s *stepLaunch) Cleanup(state multistep.StateBag) {
 		return
 	}
 
-	// req := api.ImagesPost{
-	// 	Aliases:  outputImage,
-	// 	ImagePut: api.ImagePut{
-	// 		Public:     public,
-	// 		Properties: properties,
-	// 	},
-	// 	Source: &api.ImagesPostSource{
-	// 		Type: "container",
-	// 		Name: container,
-	// 	},
-	// 	CompressionAlgorithm: compressionAlgorithm,
-	// }
-
 	ui.Say("Unregistering and deleting container...")
 	
 	err = s.u.DeleteInstance(s.instanceName)
