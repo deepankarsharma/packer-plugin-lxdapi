@@ -11,7 +11,6 @@ import (
 	"path"
 	"regexp"
 	"strings"
-	"syscall"
 	"time"
 
 	lxd "github.com/lxc/lxd/client"
@@ -182,10 +181,11 @@ func (u *LXDUtils) UploadFile(instanceName, fromFile, toDir string) error {
 		return fmt.Errorf("cannot stat %s: %w", fromFile, err)
 	}
 
-	if linuxstat, ok := stat.Sys().(*syscall.Stat_t); ok {
-		UID = int64(linuxstat.Uid)
-		GID = int64(linuxstat.Gid)
+	UID, GID, err = GetUidGid(stat)
+	if err != nil {
+		return err
 	}
+
 	mode = os.FileMode(0755)
 
 	data, err := ioutil.ReadFile(fromFile)
