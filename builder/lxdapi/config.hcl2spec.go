@@ -18,11 +18,12 @@ type FlatConfig struct {
 	PackerOnError       *string           `mapstructure:"packer_on_error" cty:"packer_on_error" hcl:"packer_on_error"`
 	PackerUserVars      map[string]string `mapstructure:"packer_user_variables" cty:"packer_user_variables" hcl:"packer_user_variables"`
 	PackerSensitiveVars []string          `mapstructure:"packer_sensitive_variables" cty:"packer_sensitive_variables" hcl:"packer_sensitive_variables"`
-	LaunchConfig        map[string]string `mapstructure:"launch_config" required:"false" cty:"launch_config" hcl:"launch_config"`
+	Config              map[string]string `mapstructure:"config" required:"false" cty:"config" hcl:"config"`
 	OutputImage         *string           `mapstructure:"output_image" required:"true" cty:"output_image" hcl:"output_image"`
 	PublishProperties   map[string]string `mapstructure:"publish_properties" required:"false" cty:"publish_properties" hcl:"publish_properties"`
 	SourceImage         *string           `mapstructure:"source_image" required:"true" cty:"source_image" hcl:"source_image"`
-	VirtualMachine      *bool             `mapstructure:"virtual_machine" cty:"virtual_machine" hcl:"virtual_machine"`
+	VirtualMachine      *bool             `mapstructure:"virtual_machine" required:"true" cty:"virtual_machine" hcl:"virtual_machine"`
+	UnixSocketPath      *string           `mapstructure:"unix_socket_path" required:"false" cty:"unix_socket_path" hcl:"unix_socket_path"`
 }
 
 // FlatMapstructure returns a new FlatConfig.
@@ -45,11 +46,12 @@ func (*FlatConfig) HCL2Spec() map[string]hcldec.Spec {
 		"packer_on_error":            &hcldec.AttrSpec{Name: "packer_on_error", Type: cty.String, Required: false},
 		"packer_user_variables":      &hcldec.AttrSpec{Name: "packer_user_variables", Type: cty.Map(cty.String), Required: false},
 		"packer_sensitive_variables": &hcldec.AttrSpec{Name: "packer_sensitive_variables", Type: cty.List(cty.String), Required: false},
-		"launch_config":              &hcldec.AttrSpec{Name: "launch_config", Type: cty.Map(cty.String), Required: false},
+		"config":                     &hcldec.AttrSpec{Name: "config", Type: cty.Map(cty.String), Required: false},
 		"output_image":               &hcldec.AttrSpec{Name: "output_image", Type: cty.String, Required: false},
 		"publish_properties":         &hcldec.AttrSpec{Name: "publish_properties", Type: cty.Map(cty.String), Required: false},
 		"source_image":               &hcldec.AttrSpec{Name: "source_image", Type: cty.String, Required: false},
 		"virtual_machine":            &hcldec.AttrSpec{Name: "virtual_machine", Type: cty.Bool, Required: false},
+		"unix_socket_path":           &hcldec.AttrSpec{Name: "unix_socket_path", Type: cty.String, Required: false},
 	}
 	return s
 }

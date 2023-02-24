@@ -2,7 +2,6 @@
 package lxdapi
 import (
 	"fmt"
-
 	"github.com/hashicorp/packer-plugin-sdk/common"
 	packersdk "github.com/hashicorp/packer-plugin-sdk/packer"
 	"github.com/hashicorp/packer-plugin-sdk/template/config"
@@ -11,11 +10,12 @@ import (
 
 type Config struct {
 	common.PackerConfig `mapstructure:",squash"`
-	LaunchConfig map[string]string `mapstructure:"launch_config" required:"false"`
+	Config map[string]string `mapstructure:"config" required:"false"`
 	OutputImage   string `mapstructure:"output_image" required:"true"`
 	PublishProperties map[string]string `mapstructure:"publish_properties" required:"false"`
 	SourceImage   string `mapstructure:"source_image" required:"true"`
-	VirtualMachine bool `mapstructure:"virtual_machine"`
+	VirtualMachine bool `mapstructure:"virtual_machine" required:"true"`
+	UnixSocketPath string `mapstructure:"unix_socket_path" required:"false"`
 }
 
 func (c *Config) Prepare(raws ...interface{}) error {
@@ -29,7 +29,6 @@ func (c *Config) Prepare(raws ...interface{}) error {
 		return err
 	}
 
-	// Accumulate any errors
 	var errs *packersdk.MultiError
 
 	if c.SourceImage == "" {
