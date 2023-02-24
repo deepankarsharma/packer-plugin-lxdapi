@@ -1,10 +1,9 @@
-//go:generate packer-sdc mapstructure-to-hcl2 -type Config
-
 package lxdapi
 
 import (
 	"context"
 
+	"github.com/google/uuid"
 	"github.com/hashicorp/hcl/v2/hcldec"
 	"github.com/hashicorp/packer-plugin-sdk/multistep"
 	"github.com/hashicorp/packer-plugin-sdk/multistep/commonsteps"
@@ -19,6 +18,7 @@ const BuilderId = "lxdapi.builder"
 type Builder struct {
 	config Config
 	runner multistep.Runner
+	instanceName string
 }
 
 func (b *Builder) ConfigSpec() hcldec.ObjectSpec { return b.config.FlatMapstructure().HCL2Spec() }
@@ -31,31 +31,33 @@ func (b *Builder) Prepare(raws ...interface{}) (generatedVars []string, warnings
 	if err != nil {
 		return nil, nil, err
 	}
-	// Return the placeholder for the generated data that will become available to provisioners and post-processors.
-	// If the builder doesn't generate any data, just return an empty slice of string: []string{}
-	buildGeneratedData := []string{"GeneratedMockData"}
+	b.instanceName = "lxdapi-builder-" + uuid.New().String()
+	buildGeneratedData := []string{"InstanceName", "UnixSocketPath"}
 	return buildGeneratedData, nil, nil
 }
 
 func (b *Builder) Run(ctx context.Context, ui packer.Ui, hook packer.Hook) (packer.Artifact, error) {
-	steps := []multistep.Step{}
-
-	steps = append(steps,
-		&StepSayConfig{
-			MockConfig: b.config.SourceImage,
-		},
+	ui.Say("=================================================")
+	ui.Say(" Running Builder.Run()")
+	ui.Say("=================================================")
+	steps := []multistep.Step{
+		&stepLaunch{},
+		&stepProvision{},
+		&stepPublish{},
 		new(commonsteps.StepProvision),
-	)
-
+	}
 	// Setup the state bag and initial state for the steps
 	state := new(multistep.BasicStateBag)
+	state.Put("config", &b.config)
 	state.Put("hook", hook)
 	state.Put("ui", ui)
+	state.Put("instanceName", b.instanceName)
 
 	// Set the value of the generated data that will become available to provisioners.
 	// To share the data with post-processors, use the StateData in the artifact.
 	state.Put("generated_data", map[string]interface{}{
-		"GeneratedMockData": "mock-build-data",
+		"InstanceName": b.instanceName,
+		"UnixSocketPath": b.config.UnixSocketPath,
 	})
 
 	// Run!
