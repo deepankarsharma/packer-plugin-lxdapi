@@ -10,8 +10,9 @@
 
 source "lxdapi" "instance" {
   unix_socket_path = "/var/snap/lxd/common/lxd/unix.socket"
-  source_image        = "jammy-amd64"
+  source_image     = "jammy-amd64"
   output_image = "jammy-output"
+  output_image_description = "Jammy container image"
   publish_properties = {
     description = "Jammy container image"
   }
@@ -19,26 +20,22 @@ source "lxdapi" "instance" {
     "security.secureboot": "false"
   }
   virtual_machine = false
+  compression_algorithm = "zstd"
 }
 
 build {
   sources = [
     "source.lxdapi.instance",
   ]
-  
-  provisioner "lxdapi-file" {
-    source = "foo.txt"
-    destination = "/tmp/app.tar.gz"
-  }
 
   provisioner "lxdapi-shell" {
     environment = {
-      "FOO" = "bar"
+      "HELLO": "WORLD"
     }
 
     inline = [
-      "sudo dnf install -y git",
-      "git clone"
+      "env",
+      "echo $HELLO",
     ]
   }
 }

@@ -19,7 +19,12 @@ type stepLaunch struct {
 const lxdConfigKey = "user._dt"
 
 func (s *stepLaunch) Run(ctx context.Context, state multistep.StateBag) multistep.StepAction {
+	
 	ui := state.Get("ui").(sdk.Ui)
+	ui.Say("=================================================")
+	ui.Say(" Running stepLaunch.Run()")
+	ui.Say("=================================================")
+
 	ui.Say("Launching container...");
 	config := state.Get("config").(*Config)
 	
@@ -72,9 +77,56 @@ func (s *stepLaunch) Run(ctx context.Context, state multistep.StateBag) multiste
 
 func (s *stepLaunch) Cleanup(state multistep.StateBag) {
 	ui := state.Get("ui").(sdk.Ui)
+	ui.Say("=================================================")
+	ui.Say(" Running stepLaunch.Cleanup()")
+	ui.Say("=================================================")
+	config := state.Get("config").(*Config)
+
+	ui.Say("Exporting output image...")
+	req := api.ImagesPost{
+		Aliases: []api.ImageAlias{
+			{	
+				Name: config.OutputImage,
+				Description: config.OutputImageDescription,
+			},
+		},
+		Source: &api.ImagesPostSource{
+			Type: "container",
+			Name: s.instanceName,
+		},
+		CompressionAlgorithm: config.CompressionAlgorithm,
+	}
+
+	err := s.u.StopInstance(s.instanceName)
+	if err != nil {
+		ui.Error("Error stopping instance: " + err.Error())
+		state.Put("error", err)
+		return
+	}
+
+	err = s.u.PublishInstanceAsImage(s.instanceName, req)
+	if err != nil {
+		ui.Error("Error exporting image: " + err.Error())
+		state.Put("error", err)
+		return
+	}
+
+	// req := api.ImagesPost{
+	// 	Aliases:  outputImage,
+	// 	ImagePut: api.ImagePut{
+	// 		Public:     public,
+	// 		Properties: properties,
+	// 	},
+	// 	Source: &api.ImagesPostSource{
+	// 		Type: "container",
+	// 		Name: container,
+	// 	},
+	// 	CompressionAlgorithm: compressionAlgorithm,
+	// }
+
 	ui.Say("Unregistering and deleting container...")
 	
-	err := s.u.DeleteInstance(s.instanceName)
+	err = s.u.DeleteInstance(s.instanceName)
 	if err != nil {
 		ui.Error("Error deleting instance: " + err.Error())
 		state.Put("error", err)
@@ -86,13 +138,18 @@ type stepProvision struct {}
 
 func (s *stepProvision) Run(ctx context.Context, state multistep.StateBag) multistep.StepAction {
 	ui := state.Get("ui").(sdk.Ui)
+	ui.Say("=================================================")
+	ui.Say(" Running stepProvision.Run()")
+	ui.Say("=================================================")
 	ui.Say("Provisioning container...");
 	return multistep.ActionContinue
 }
 
 func (s *stepProvision) Cleanup(state multistep.StateBag) {
 	ui := state.Get("ui").(sdk.Ui)
-	ui.Say("Running stepProvision.Cleanup ...")
+	ui.Say("=================================================")
+	ui.Say(" Running stepProvision.Cleanup()")
+	ui.Say("=================================================")
 }
 
 
@@ -101,11 +158,17 @@ type stepPublish struct {}
 
 func (s *stepPublish) Run(ctx context.Context, state multistep.StateBag) multistep.StepAction {
 	ui := state.Get("ui").(sdk.Ui)
+	ui.Say("=================================================")
+	ui.Say(" Running stepPublish.Run()")
+	ui.Say("=================================================")
 	ui.Say("Publishing container...");
 	return multistep.ActionContinue
 }
 
 func (s *stepPublish) Cleanup(state multistep.StateBag) {
 	ui := state.Get("ui").(sdk.Ui)
+	ui.Say("=================================================")
+	ui.Say(" Running stepPublish.Cleanup()")
+	ui.Say("=================================================")
 	ui.Say("Running stepPublish.Cleanup ...")
 }

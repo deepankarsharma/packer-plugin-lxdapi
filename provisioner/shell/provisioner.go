@@ -5,12 +5,11 @@ package lxdapi
 import (
 	"context"
 	"fmt"
-	//utils "packer-plugin-lxdapi/utils"
+	utils "packer-plugin-lxdapi/utils"
 	"github.com/hashicorp/hcl/v2/hcldec"
 	"github.com/hashicorp/packer-plugin-sdk/packer"
 	"github.com/hashicorp/packer-plugin-sdk/template/config"
 	"github.com/hashicorp/packer-plugin-sdk/template/interpolate"
-	//lxd "github.com/lxc/lxd/client"
 )
 
 type Config struct {
@@ -44,15 +43,38 @@ func (p *ShellProvisioner) Prepare(raws ...interface{}) error {
 	}
 	
 func (p *ShellProvisioner) Provision(_ context.Context, ui packer.Ui, _ packer.Communicator, generatedData map[string]interface{}) error {
-	ui.Say("Hello from the LXD API Shell Provisioner")
-	// print number of keys in generatedData
-	ui.Say("Number of keys in generatedData: " + fmt.Sprintf("%v", len(generatedData)))
-	// print keys of generatedData
-	for k := range generatedData {
-		ui.Say("Key: " + k)
+	ui.Say("=================================================")
+	ui.Say(" Running ShellProvisioner.Provision()")
+	ui.Say("=================================================")
+	ui.Say("Fetching InstanceName from generatedData")
+	instanceName := generatedData["InstanceName"].(string)
+	unixSocketPath := generatedData["UnixSocketPath"].(string)
+
+	ui.Say("Environment variables:")
+	for k, v := range p.config.Environment {
+		ui.Say(fmt.Sprintf("Environment variable: %s=%s", k, v))
 	}
-	//instanceName := generatedData["InstanceName"].(string)
-	//ui.Say("Instance server: " + fmt.Sprintf("%v", instanceName))
+
+	u, err := utils.NewLXDUtilStruct(unixSocketPath)
+	if err != nil {
+		return err
+	}
+
+	// iterate over the inline commands
+	for _, command := range p.config.Inline {
+		ui.Say(fmt.Sprintf("shell_exec: %s", command))
+		exec_result, err := u.Exec(instanceName, command, p.config.Environment)
+		if err != nil {
+			return err
+		}
+		ui.Say(fmt.Sprintf("rcode: %v", exec_result.ReturnCode))
+		ui.Say(fmt.Sprintf("stdout: %v", exec_result.Stdout))
+		ui.Say(fmt.Sprintf("stderr: %v", exec_result.Stderr))
+		if exec_result.ReturnCode != 0 {
+			return fmt.Errorf("shell_exec returned non-zero exit code: %v", exec_result.ReturnCode)
+		}
+	}
+
 	return nil
 }
 	

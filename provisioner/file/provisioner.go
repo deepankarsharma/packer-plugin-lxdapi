@@ -5,6 +5,7 @@ package lxdapi
 import (
 	"context"
 
+	utils "packer-plugin-lxdapi/utils"
 	"github.com/hashicorp/hcl/v2/hcldec"
 	"github.com/hashicorp/packer-plugin-sdk/packer"
 	"github.com/hashicorp/packer-plugin-sdk/template/config"
@@ -41,6 +42,21 @@ func (p *FileProvisioner) Prepare(raws ...interface{}) error {
 }
 
 func (p *FileProvisioner) Provision(_ context.Context, ui packer.Ui, _ packer.Communicator, generatedData map[string]interface{}) error {
-	ui.Say("Hello from the LXD API File Provisioner")
+	ui.Say("=================================================")
+	ui.Say(" Running FileProvisioner.Provision()")
+	ui.Say("=================================================")
+	instanceName := generatedData["InstanceName"].(string)
+	unixSocketPath := generatedData["UnixSocketPath"].(string)
+
+	u, err := utils.NewLXDUtilStruct(unixSocketPath)
+	if err != nil {
+		return err
+	}
+
+	err = u.UploadFile(instanceName, p.config.Source, p.config.Destination)
+	if err != nil {
+		return err
+	}
+
 	return nil
 }

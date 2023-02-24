@@ -4,10 +4,12 @@ import (
 	"bytes"
 	"fmt"
 	"io/ioutil"
+	"errors"
 	"log"
 	"net"
 	"os"
 	"path"
+	"regexp"
 	"strings"
 	"syscall"
 	"time"
@@ -16,7 +18,7 @@ import (
 	"github.com/lxc/lxd/shared/api"
 )
 
-
+var lxdLogFilenameRegex = regexp.MustCompile(`/1.0/instances/\S+/logs/(\S+)`)
 
 func GetLXDInstanceServer(lxd_uri string) (lxd.InstanceServer, error) {
 	c, err := lxd.ConnectLXDUnix(lxd_uri, nil)
@@ -169,7 +171,7 @@ func (u *LXDUtils) GetInstanceLXDIP(instanceName string, blacklist []string) (ne
 	return ip, nil
 }
 
-func (u *LXDUtils) UploadFile(fromFile, toDir, instanceName string) error {
+func (u *LXDUtils) UploadFile(instanceName, fromFile, toDir string) error {
 	var mode os.FileMode
 	var toPath string
 	UID := int64(0)
@@ -248,8 +250,8 @@ func (u *LXDUtils) RecursiveMkdir(instanceName, dir string, mode os.FileMode, UI
 	return u.lxd.CreateInstanceFile(instanceName, dir, args)
 }
 
-func (u *LXDUtils) UploadFiles(froms []string, to, instanceName string) error {
-	for _, from := range froms {
+func (u *LXDUtils) UploadFiles(instanceName string, from []string, to string) error {
+	for _, from := range from {
 		err := u.UploadFile(from, to, instanceName)
 		if err != nil {
 			return err
@@ -258,33 +260,65 @@ func (u *LXDUtils) UploadFiles(froms []string, to, instanceName string) error {
 	return nil
 }
 
-func (u *LXDUtils) Exec(instanceName, command string) error {
-	split := strings.Fields(command)
-
-	op, err := u.lxd.ExecInstance(instanceName, api.InstanceExecPost{
-		Command: split,
-	}, &lxd.InstanceExecArgs{})
-	if err != nil {
-		return err
-	}
-
-	err = op.Wait()
-	if err != nil {
-		return fmt.Errorf("failed to exec %s: %w", command, err)
-	}
-
-	return nil
+type ExecResult struct {
+	Stdout string
+	Stderr string
+	ReturnCode float64
 }
 
-func (u *LXDUtils) ExecMultiple(instanceName string, commands []string) error {
-	for _, command := range commands {
-		err := u.Exec(instanceName, command)
-		if err != nil {
-			return err
-		}
+func (u *LXDUtils) Exec(instanceName, command string, environment map[string]string) (*ExecResult, error) {
+	split := strings.Fields(command)
+
+	op, err := u.lxd.ExecInstance(instanceName,
+		api.InstanceExecPost{
+			Command: split,
+			Environment: environment,
+			Interactive: false,
+			RecordOutput: true,
+		},
+		&lxd.InstanceExecArgs{},
+	)
+
+	if err != nil {
+		return nil, err
+	}
+	
+	err = op.Wait()
+	if err != nil {
+		return nil, fmt.Errorf("failed to exec %s: %w", command, err)
 	}
 
-	return nil
+	op_ := op.Get()
+	output := op_.Metadata["output"].(map[string]interface{})
+	outReader, err := u.lxd.GetInstanceLogfile(instanceName, lxdLogFilenameRegex.FindStringSubmatch(output["1"].(string))[1])
+	if err != nil {
+		return nil, err
+	}
+	errReader, err := u.lxd.GetInstanceLogfile(instanceName, lxdLogFilenameRegex.FindStringSubmatch(output["2"].(string))[1])
+	if err != nil {
+		return nil, err
+	}
+
+	outData, err := ioutil.ReadAll(outReader)
+	if err != nil {
+		return nil, err
+	}
+	outReader.Close()
+
+	errData, err := ioutil.ReadAll(errReader)
+	if err != nil {
+		return nil, err
+	}
+	errReader.Close()
+
+	stdout := string(outData)
+	stderr := string(errData)
+
+	code, ok := op_.Metadata["return"].(float64)
+	if !ok {
+		return &ExecResult{stdout, stderr, -1}, errors.New("failed to get exit code")
+	}
+	return &ExecResult{stdout, stderr, code}, nil
 }
 
 func (u *LXDUtils) CreateInstanceHL(req api.InstancesPost) error {
@@ -299,6 +333,30 @@ func (u *LXDUtils) CreateInstanceHL(req api.InstancesPost) error {
 	}
 
 	_, err = u.WaitInstanceIP(req.Name, []string{})
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (u *LXDUtils) PublishInstanceAsImage(instanceName string, req api.ImagesPost) error {
+	for _, alias := range req.Aliases {
+		aliasEntry, _, _ := u.lxd.GetImageAlias(alias.Name)
+		if aliasEntry != nil {
+			err := u.lxd.DeleteImageAlias(alias.Name)
+			if err != nil {
+				return err
+			}
+		}
+	} 
+
+	op, err := u.lxd.CreateImage(req, nil)
+	if err != nil {
+		return err
+	}
+
+	// Wait for operation to finish
+	err = op.Wait()
 	if err != nil {
 		return err
 	}

@@ -32,11 +32,14 @@ func (b *Builder) Prepare(raws ...interface{}) (generatedVars []string, warnings
 		return nil, nil, err
 	}
 	b.instanceName = "lxdapi-builder-" + uuid.New().String()
-	buildGeneratedData := []string{"InstanceName"}
+	buildGeneratedData := []string{"InstanceName", "UnixSocketPath"}
 	return buildGeneratedData, nil, nil
 }
 
 func (b *Builder) Run(ctx context.Context, ui packer.Ui, hook packer.Hook) (packer.Artifact, error) {
+	ui.Say("=================================================")
+	ui.Say(" Running Builder.Run()")
+	ui.Say("=================================================")
 	steps := []multistep.Step{
 		&stepLaunch{},
 		&stepProvision{},
@@ -54,6 +57,7 @@ func (b *Builder) Run(ctx context.Context, ui packer.Ui, hook packer.Hook) (pack
 	// To share the data with post-processors, use the StateData in the artifact.
 	state.Put("generated_data", map[string]interface{}{
 		"InstanceName": b.instanceName,
+		"UnixSocketPath": b.config.UnixSocketPath,
 	})
 
 	// Run!
