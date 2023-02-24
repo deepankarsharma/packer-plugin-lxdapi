@@ -1,4 +1,7 @@
+// +build linux darwin freebsd openbsd netbsd solaris
+
 package lxdapi
+
 
 import (
 	"io/fs"
