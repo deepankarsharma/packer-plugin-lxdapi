@@ -7,3 +7,6 @@ crash.log
 dist/*
 .docs/*
 docs.zip
+rm_all.sh
+*~
+.vscode

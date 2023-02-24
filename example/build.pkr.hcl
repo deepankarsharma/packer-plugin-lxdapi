@@ -5,19 +5,37 @@
 //       version = "0.0.4"
 //     }
 //   }
+
 // }
 
-source "lxdapi-builder" "vm" {
-  virtual_machine = true
-  image        = "images:rockylinux/8/cloud/amd64"
-  output_image = "rocky8-lxdapi-phase0"
+source "lxdapi" "instance" {
+  unix_socket_path = "/var/snap/lxd/common/lxd/unix.socket"
+  source_image     = "jammy-amd64"
+  output_image = "jammy-output"
+  output_image_description = "Jammy container image"
   publish_properties = {
-    description = "Rocky Linux 8 LXD API Phase 0"
+    description = "Jammy container image"
   }
+  config = {
+    "security.secureboot": "false"
+  }
+  virtual_machine = false
+  compression_algorithm = "zstd"
 }
 
 build {
   sources = [
-    "source.lxdapi-builder.vm",
+    "source.lxdapi.instance",
   ]
+
+  provisioner "lxdapi-shell" {
+    environment = {
+      "HELLO": "WORLD"
+    }
+
+    inline = [
+      "env",
+      "echo $HELLO",
+    ]
+  }
 }
