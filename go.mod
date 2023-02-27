@@ -8,7 +8,7 @@ require (
 	github.com/hashicorp/packer-plugin-sdk v0.3.4
 	github.com/lxc/lxd v0.0.0-20230224133553-7bb22ef1cc03
 	github.com/mitchellh/mapstructure v1.5.0
-	github.com/zclconf/go-cty v1.10.0
+	github.com/zclconf/go-cty v1.13.0
 )
 
 require (
@@ -64,7 +64,6 @@ require (
 	github.com/juju/webbrowser v1.0.0 // indirect
 	github.com/julienschmidt/httprouter v1.3.0 // indirect
 	github.com/kballard/go-shellquote v0.0.0-20180428030007-95032a82bc51 // indirect
-	github.com/klauspost/compress v1.15.15 // indirect
 	github.com/kr/fs v0.1.0 // indirect
 	github.com/masterzen/simplexml v0.0.0-20190410153822-31eea3082786 // indirect
 	github.com/masterzen/winrm v0.0.0-20210623064412-3b76017826b0 // indirect
